@@ -19,9 +19,9 @@ class AppleNotes extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(CupertinoIcons.doc_text, color: Colors.orange[300], size: 14),
+              Icon(CupertinoIcons.doc_text, color: const Color.fromARGB(255, 197, 197, 197), size: 14),
               const SizedBox(width: 8),
-              Text("PENSAMIENTOS", style: TextStyle(color: Colors.orange[300], fontSize: 10, fontWeight: FontWeight.bold)),
+              Text("PENSAMIENTOS", style: TextStyle(color: const Color.fromARGB(255, 199, 199, 199), fontSize: 10, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 12),

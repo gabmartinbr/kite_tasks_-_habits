@@ -3,21 +3,22 @@ import 'package:flutter/material.dart';
 class Habit {
   String name;
   Color color;
-  List<bool> activeDays; 
+  List<DateTime> completedDates;
   int currentStreak;
-  bool isCompletedToday;
-  List<DateTime> completedDates; // Historial de días completados
   DateTime createdAt;
-  DateTime? deletedAt;
+  DateTime? deletedAt; // Null = Activo, Con fecha = Archivado
 
   Habit({
     required this.name,
     required this.color,
-    required this.activeDays,
+    required this.completedDates,
     this.currentStreak = 0,
-    this.isCompletedToday = false,
-    List<DateTime>? completedDates,
     required this.createdAt,
     this.deletedAt,
-  }) : completedDates = completedDates ?? [];
+  });
+
+  bool get isCompletedToday {
+    DateTime now = DateTime.now();
+    return completedDates.any((d) => d.year == now.year && d.month == now.month && d.day == now.day);
+  }
 }
