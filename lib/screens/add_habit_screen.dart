@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../models/habit_model.dart';
 
 class AddHabitScreen extends StatefulWidget {
-  final Function(Habit) onSave;
   final List<Habit> existingHabits;
-  const AddHabitScreen({super.key, required this.onSave, required this.existingHabits});
+  final Function(Habit) onSave;
+
+  const AddHabitScreen({super.key, required this.existingHabits, required this.onSave});
 
   @override
   State<AddHabitScreen> createState() => _AddHabitScreenState();
@@ -13,116 +13,92 @@ class AddHabitScreen extends StatefulWidget {
 
 class _AddHabitScreenState extends State<AddHabitScreen> {
   final TextEditingController _controller = TextEditingController();
-  // Eliminamos _days porque el modelo actual usa completedDates para el historial
-  Color _selColor = const Color(0xFFFFB7B2);
-  final List<Color> _pastelColors = [
-    const Color(0xFFFFB7B2), 
-    const Color(0xFFFFDAC1), 
-    const Color(0xFFE2F0CB), 
-    const Color(0xFFB5EAD7), 
-    const Color(0xFFC7CEEA)
-  ];
+  Color _selectedColor = Colors.blue;
 
-  void _openFullColorPicker() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1C1C1E),
-        content: SingleChildScrollView(
-          child: ColorPicker(
-            pickerColor: _selColor, 
-            onColorChanged: (c) => setState(() => _selColor = c.withOpacity(1.0)), 
-            enableAlpha: false, 
-            labelTypes: const []
-          )
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
-      ),
-    );
-  }
+  final List<Color> _colors = [
+    Colors.blue, Colors.red, Colors.green, Colors.yellow, 
+    Colors.purple, Colors.orange, Colors.teal, Colors.pink
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-        top: 30, 
-        left: 25, 
-        right: 25, 
-        bottom: MediaQuery.of(context).viewInsets.bottom + 30
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        top: 24, left: 24, right: 24,
       ),
       decoration: const BoxDecoration(
-        color: Color(0xFF1C1C1E), 
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30))
+        color: Color(0xFF1C1C1E),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("NOMBRE DEL HÁBITO", 
-            style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
+          const Text("NUEVO HÁBITO", 
+            style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+          const SizedBox(height: 20),
           TextField(
-            controller: _controller, 
-            style: const TextStyle(color: Colors.white, fontSize: 20), 
+            controller: _controller,
+            autofocus: true,
+            style: const TextStyle(color: Colors.white, fontSize: 20),
             decoration: const InputDecoration(
-              hintText: "Ej. Leer", 
-              hintStyle: TextStyle(color: Colors.white10), 
-              border: InputBorder.none
-            )
+              hintText: "Ej: Leer 30 min",
+              hintStyle: TextStyle(color: Colors.white24),
+              border: InputBorder.none,
+            ),
           ),
-          const SizedBox(height: 25),
-          const Text("COLOR", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 15),
+          const SizedBox(height: 20),
           SizedBox(
-            height: 50, 
-            child: ListView(
-              scrollDirection: Axis.horizontal, 
-              children: [
-                ..._pastelColors.map((c) => GestureDetector(
-                  onTap: () => setState(() => _selColor = c), 
-                  child: Container(
-                    width: 45, 
-                    margin: const EdgeInsets.only(right: 12), 
-                    decoration: BoxDecoration(
-                      color: c, 
-                      shape: BoxShape.circle, 
-                      border: _selColor == c ? Border.all(color: Colors.white, width: 3) : null
-                    )
-                  )
-                )),
-                GestureDetector(
-                  onTap: _openFullColorPicker, 
-                  child: Container(
-                    width: 45, 
-                    decoration: const BoxDecoration(color: Colors.white10, shape: BoxShape.circle), 
-                    child: const Icon(Icons.add, color: Colors.white)
-                  )
+            height: 40,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _colors.length,
+              itemBuilder: (context, index) => GestureDetector(
+                onTap: () => setState(() => _selectedColor = _colors[index]),
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  margin: const EdgeInsets.only(right: 15),
+                  decoration: BoxDecoration(
+                    color: _colors[index],
+                    shape: BoxShape.circle,
+                    border: _selectedColor == _colors[index] 
+                      ? Border.all(color: Colors.white, width: 2) 
+                      : null,
+                  ),
                 ),
-              ]
-            )
+              ),
+            ),
           ),
           const SizedBox(height: 30),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _selColor, 
-              minimumSize: const Size(double.infinity, 55), 
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18))
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              ),
+              onPressed: () {
+                if (_controller.text.isNotEmpty) {
+                  // --- AQUÍ ESTÁ LA CORRECCIÓN ---
+                  final newHabit = Habit(
+                    name: _controller.text,
+                    completedDates: [],
+                    colorValue: _selectedColor.value, // Pasamos el .value (int)
+                    createdAt: DateTime.now(),
+                  );
+                  // -------------------------------
+                  widget.onSave(newHabit);
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text("GUARDAR", style: TextStyle(fontWeight: FontWeight.bold)),
             ),
-            onPressed: () {
-              if (_controller.text.isNotEmpty) {
-                // CORRECCIÓN AQUÍ: Ajustado a los parámetros del modelo Habit
-                widget.onSave(Habit(
-                  name: _controller.text, 
-                  color: _selColor, 
-                  completedDates: [], // Lista vacía al iniciar
-                  createdAt: DateTime.now(),
-                  currentStreak: 0,
-                ));
-                Navigator.pop(context);
-              }
-            },
-            child: const Text("CREAR HÁBITO", 
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           ),
+          const SizedBox(height: 24),
         ],
       ),
     );
